@@ -1,0 +1,4 @@
+User-agent: *
+Disallow:
+
+Sitemap: https://vldb-fmsd-tutorial.github.io/sitemap.xml
