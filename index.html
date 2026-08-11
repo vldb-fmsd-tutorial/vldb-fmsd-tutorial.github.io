@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>From Big Time Series Forecasting to Foundation Models for Structured Data — VLDB 2026 Tutorial</title>
+<meta name="description" content="A 90-minute tutorial at VLDB 2026: foundation models for structured data — time-series and tabular pretraining, zero-shot and in-context inference, contamination-aware evaluation, and what belongs inside the database. Boston, 31 August – 4 September 2026.">
+<meta name="theme-color" content="#f3f2f2">
+
+<!-- Update these two if the page is deployed somewhere other than the artifact URL
+     printed in the PVLDB paper. -->
+<link rel="canonical" href="https://vldb-fmsd-tutorial.github.io/">
+<meta property="og:url" content="https://vldb-fmsd-tutorial.github.io/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="From Big Time Series Forecasting to Foundation Models for Structured Data">
+<meta property="og:description" content="A 90-minute VLDB 2026 tutorial on foundation models for structured data — time series and tables, evaluation, and native predictive operators. Boston, 31 Aug – 4 Sep 2026.">
+<meta property="og:site_name" content="VLDB 2026 Tutorial">
+<meta name="twitter:card" content="summary">
+
+<link rel="stylesheet" href="_ds/modernist-d83b0fac-4ab0-4b22-bfe5-b2f092d48b19/styles.css">
+
+<style>
+  /* Page layout on top of the Modernist design system. Every color, font and
+     gap comes from the tokens in styles.css; the raw px values here are the
+     editorial type scale, which is set by hand for this page. */
+
+  :root {
+    --page-max: 1200px;
+    --page-pad: clamp(20px, 5vw, 72px);
+    --nav-h: 64px;
+  }
+
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+  body {
+    margin: 0;
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-body);
+    text-wrap: pretty;
+  }
+
+  a { color: var(--color-accent-700); text-decoration: none; }
+  a:hover { color: var(--color-accent); }
+  :focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+
+  .wrap { max-width: var(--page-max); margin: 0 auto; padding: 0 var(--page-pad); }
+  hr.hr { margin: 0; }
+  section[id] { scroll-margin-top: calc(var(--nav-h) + 24px); }
+
+  /* — nav — */
+  .site-nav {
+    position: sticky; top: 0; z-index: 20;
+    background: var(--color-bg);
+    padding-inline: max(var(--page-pad), calc((100% - var(--page-max)) / 2 + var(--page-pad)));
+  }
+
+  /* — shared — */
+  .kicker {
+    display: block; font-size: 13px; line-height: 14px;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--color-accent-700); font-feature-settings: 'tnum' 1;
+    margin: 0 0 14px;
+  }
+  .muted { color: color-mix(in srgb, var(--color-text) 78%, transparent); }
+  .actions { display: flex; gap: var(--space-3); flex-wrap: wrap; margin-top: 28px; }
+
+  /* — hero — */
+  .hero { padding: 112px 0 84px; }
+  /* The four spans below are hard line breaks, so the scale has to keep the
+     longest of them ("From Big Time Series", 20 characters) inside the column
+     at every width — hence the 31px floor rather than a smaller one. */
+  .hero h1 {
+    font-size: clamp(31px, 6.2vw, 76px); line-height: 1.06;
+    letter-spacing: -0.02em; margin: 0 0 0 -0.058em;
+  }
+  .hero h1 span { display: block; }
+  .hero h1 .accent { color: var(--color-accent); }
+  .hero .lede { font-size: 17px; line-height: 28px; max-width: 62ch; margin: 42px 0 0; }
+
+  /* — stat row — */
+  .stats {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 42px 32px; padding: 56px 0;
+  }
+  .stat-num {
+    font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+    font-size: clamp(28px, 3vw, 40px); line-height: 1.1;
+    color: var(--color-accent); margin: 0 0 0 -0.045em;
+  }
+  .stat-cap {
+    font-size: 13px; line-height: 20px; letter-spacing: 0.04em; text-transform: uppercase;
+    color: color-mix(in srgb, var(--color-text) 70%, transparent); margin: 14px 0 0;
+  }
+
+  /* — two-column prose sections — */
+  .split {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 28px clamp(24px, 5vw, 96px); padding: 70px 0 84px;
+  }
+  .split h2 {
+    font-size: clamp(26px, 2.8vw, 36px); line-height: 1.1;
+    letter-spacing: -0.015em; margin: 0; max-width: 18ch;
+  }
+  .split p { font-size: 16px; line-height: 28px; max-width: 58ch; }
+  .split p + p { margin-top: 28px; }
+  .tags { display: flex; gap: var(--space-2); flex-wrap: wrap; margin-top: 28px; }
+
+  /* — outline — */
+  .module {
+    display: grid; grid-template-columns: 108px minmax(200px, 1.1fr) minmax(0, 1.4fr);
+    gap: 12px clamp(24px, 4vw, 64px); align-items: baseline; padding: 32px 0;
+    border-top: 2px solid var(--color-divider);
+  }
+  .module:first-of-type { padding-top: 0; border-top: 0; }
+  .module:last-of-type { padding-bottom: 0; }
+  .time {
+    display: flex; align-items: center; gap: 10px;
+    font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+    font-size: 15px; line-height: 28px; font-feature-settings: 'tnum' 1; margin: 0;
+  }
+  .time::before { content: ''; width: 10px; height: 10px; flex: none; background: var(--color-accent); }
+  .module h3 { font-size: 22px; line-height: 28px; letter-spacing: -0.01em; margin: 0; }
+  .module p { font-size: 15.5px; line-height: 28px; margin: 0; max-width: 52ch; }
+
+  /* — presenters — */
+  .presenters {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 56px clamp(32px, 6vw, 96px);
+  }
+  .presenter { display: grid; grid-template-columns: 168px minmax(0, 1fr); gap: 28px; align-items: start; }
+  .presenter h3 { font-size: 24px; line-height: 28px; letter-spacing: -0.01em; margin: 0; }
+  .presenter .affil {
+    font-size: 13px; line-height: 20px; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--color-accent-700); margin: 8px 0 0;
+  }
+  .presenter .bio { font-size: 15.5px; line-height: 28px; margin: 16px 0 0; }
+  .presenter img { width: 168px; height: 210px; object-fit: cover; }
+  /* Placeholder frame, shown until a real headshot is dropped in. */
+  .photo-slot {
+    width: 168px; height: 210px; display: grid; place-content: center; gap: 6px;
+    background: var(--color-surface); border: 2px solid var(--color-divider);
+    text-align: center;
+  }
+  .photo-slot b {
+    font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+    font-size: 32px; line-height: 1; color: var(--color-accent);
+  }
+  .photo-slot span {
+    font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: color-mix(in srgb, var(--color-text) 55%, transparent);
+  }
+  .coauthors { font-size: 15px; line-height: 28px; margin: 56px 0 0; padding-top: 28px; border-top: 2px solid var(--color-divider); max-width: 78ch; }
+
+  /* — reading list — */
+  .paper-card {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px 32px;
+    align-items: center; padding: 28px; margin-bottom: 56px;
+    background: var(--color-accent-100); color: var(--color-text);
+  }
+  .paper-card:hover { background: var(--color-accent-200); color: var(--color-text); }
+  .paper-card h3 {
+    font-size: clamp(21px, 2.2vw, 28px); line-height: 1.2;
+    letter-spacing: -0.015em; margin: 16px 0 0;
+  }
+  .paper-card .cite { font-size: 15px; line-height: 24px; margin: 12px 0 0; }
+  .paper-card .go {
+    font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+    font-size: 15px; color: var(--color-accent-700); white-space: nowrap;
+  }
+  /* Fixed at two columns so the four groups make a balanced 2x2. auto-fit
+     would fit three at 1280px and orphan the fourth on a second row. */
+  .refs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 42px clamp(32px, 5vw, 64px); }
+  @media (max-width: 700px) { .refs { grid-template-columns: 1fr; } }
+  .refs h3 {
+    font-family: var(--font-body); font-weight: 400;
+    font-size: 13px; line-height: 20px; letter-spacing: 0.08em; text-transform: uppercase;
+    margin: 0 0 20px; padding-bottom: 12px; border-bottom: 2px solid var(--color-divider);
+  }
+  .refs p { font-size: 15px; line-height: 24px; margin: 0 0 20px; }
+  .refs p:last-child { margin-bottom: 0; }
+
+  /* — materials — */
+  .material {
+    display: grid; grid-template-columns: minmax(200px, 1fr) minmax(0, 1.3fr) auto;
+    gap: 16px clamp(24px, 4vw, 64px); align-items: center; padding: 28px 0;
+    border-top: 2px solid var(--color-divider);
+  }
+  .material:first-of-type { padding-top: 0; border-top: 0; }
+  .material:last-of-type { padding-bottom: 0; }
+  .material h3 { font-size: 20px; line-height: 28px; margin: 0; }
+  .material p { font-size: 15px; line-height: 24px; margin: 0; }
+  .pending { opacity: 0.45; pointer-events: none; white-space: nowrap; }
+
+  /* — closing poster — */
+  .poster { background: var(--color-accent); color: var(--color-bg); }
+  .poster .wrap { padding-block: 84px; }
+  .poster h2 {
+    font-size: clamp(32px, 4.2vw, 56px); line-height: 1.06;
+    letter-spacing: -0.015em; margin: 0 0 0 -0.058em;
+  }
+  .poster p { font-size: 17px; line-height: 28px; margin: 28px 0 0; max-width: 48ch; }
+  .poster .btn-ghost { color: var(--color-bg); border-color: var(--color-bg); }
+  .poster .btn-ghost:hover { background: color-mix(in srgb, var(--color-bg) 18%, transparent); }
+
+  /* — footer — */
+  .site-foot {
+    padding: 56px 0; font-size: 13px; line-height: 24px;
+    color: color-mix(in srgb, var(--color-text) 70%, transparent);
+  }
+  .site-foot p { margin: 0 0 8px; max-width: 78ch; }
+  .site-foot p:last-child { margin-bottom: 0; }
+
+  /* — narrow screens — */
+  @media (max-width: 760px) {
+    :root { --nav-h: 56px; }
+    .nav-link { display: none; }
+    .hero { padding: 72px 0 56px; }
+    .module, .material, .presenter, .paper-card { grid-template-columns: 1fr; }
+    .module { gap: 8px; }
+    .paper-card .go { text-align: left; }
+  }
+</style>
+</head>
+
+<body>
+
+<nav class="nav site-nav" aria-label="Sections">
+  <span class="nav-brand">VLDB&nbsp;2026 · Tutorial</span>
+  <a class="nav-link" href="#outline">Outline</a>
+  <a class="nav-link" href="#presenters">Presenters</a>
+  <a class="nav-link" href="#reading">Reading</a>
+  <a class="nav-link" href="#materials">Materials</a>
+  <a class="btn btn-primary" href="https://vldb.org/2026/" target="_blank" rel="noopener noreferrer">Conference site</a>
+</nav>
+
+<main class="wrap">
+
+  <section class="hero">
+    <span class="kicker">90-minute tutorial · Boston, MA · 31 Aug – 4 Sep 2026</span>
+    <h1>
+      <span>From Big Time Series</span>
+      <span>Forecasting</span>
+      <span>to Foundation Models</span>
+      <span class="accent">for Structured Data</span>
+    </h1>
+    <p class="lede">Prediction over structured data — forecasting future values, classifying rows — has long been a central concern for the database and data-mining communities. Foundation models have now arrived for both modalities: large-scale pretraining followed by zero-shot or in-context inference, in time series (Chronos, TimesFM, Moirai, Toto) and on tables alike (TabPFN, TabICL, Mitra, Limix). This tutorial surveys that shift for a database audience and asks which parts of it belong inside the data system.</p>
+    <div class="actions">
+      <a class="btn btn-primary" href="#outline">Read the outline</a>
+      <a class="btn btn-ghost" href="https://doi.org/10.14778/3827998.3828154" target="_blank" rel="noopener noreferrer">Tutorial paper (PVLDB)</a>
+    </div>
+  </section>
+
+  <hr class="hr">
+
+  <section class="stats">
+    <div>
+      <p class="stat-num">90 MIN</p>
+      <p class="stat-cap">One session, no break</p>
+    </div>
+    <div>
+      <p class="stat-num">5 MODULES</p>
+      <p class="stat-cap">Classical models to predictive operators</p>
+    </div>
+    <div>
+      <p class="stat-num">BOSTON</p>
+      <p class="stat-cap">The Westin Boston Seaport District</p>
+    </div>
+    <div>
+      <p class="stat-num">TBA</p>
+      <p class="stat-cap">Day and room announced with the program</p>
+    </div>
+  </section>
+
+  <hr class="hr">
+
+  <section class="split">
+    <div>
+      <span class="kicker">Scope</span>
+      <h2>One line, from ARIMA to pretrained tables</h2>
+    </div>
+    <div>
+      <p>Our earlier tutorials in this community — at VLDB, SIGMOD and KDD — traced the evolution from classical models and tensor methods to neural forecasting, probabilistic forecasting, and the practical systems that put them into production. This edition keeps that backbone and updates it with the most important recent development: <em>foundation models for structured data</em>.</p>
+      <p>It differs from the earlier versions in four ways. It expands scope from forecasting to both time-series and tabular modalities in one unified treatment. It moves the modeling narrative from deep probabilistic forecasting to pretraining, zero-shot inference, in-context learning and synthetic priors — a qualitative shift in how prediction is done. It foregrounds data-management questions the earlier tutorials did not define: schema heterogeneity, corpus curation, contamination-aware evaluation, realistic benchmarks, throughput and memory trade-offs, and governance. And it adds a systems perspective: pretrained models make it possible to embed predictive operators into analytical execution plans.</p>
+      <div class="tags">
+        <span class="tag tag-accent">Forecasting</span>
+        <span class="tag tag-neutral">Time-series foundation models</span>
+        <span class="tag tag-neutral">Tabular foundation models</span>
+        <span class="tag tag-neutral">Benchmarks</span>
+        <span class="tag tag-neutral">Warehouse-native ML</span>
+      </div>
+    </div>
+  </section>
+
+  <hr class="hr">
+
+  <section class="split">
+    <div>
+      <span class="kicker">Audience</span>
+      <h2>Who should attend</h2>
+    </div>
+    <div>
+      <p>Database researchers, data-mining researchers, ML-systems researchers, and practitioners who want a principled introduction to modern prediction over structured data. It is especially relevant if you work on forecasting, tabular prediction, benchmarking, warehouse-native ML, AutoML, or end-to-end deployment inside data systems.</p>
+      <p>We assume familiarity with basic linear algebra, probability, and machine-learning fundamentals — supervised learning, loss functions, gradient descent — but no prior knowledge of foundation models or structured-data pretraining. You will leave with a coherent map from classical forecasting to foundation models for structured data, an understanding of the architectural choices, pretraining strategies and evaluation practices that define the current state of the art, and an awareness of the open research problems at the intersection of foundation models and data management.</p>
+    </div>
+  </section>
+
+  <hr class="hr">
+
+  <section id="outline" style="padding: 70px 0 56px">
+    <span class="kicker">Detailed outline · five modules · 90 minutes</span>
+
+    <div class="module">
+      <p class="time">00 – 10</p>
+      <h3>From classical methods to foundation models</h3>
+      <p class="muted">The historical backbone. Exponential smoothing, ARIMA, structural and Kalman-filter models; the shift from local to global neural forecasting with DeepAR, the Temporal Fusion Transformer and N-BEATS, and deep probabilistic models; tree-based tabular practice and AutoML. Sets up the paradigm shift.</p>
+    </div>
+
+    <div class="module">
+      <p class="time">10 – 40</p>
+      <h3>Time-series foundation models</h3>
+      <p class="muted">The design space and its evaluation: tokenization versus continuous representation, decoder-only versus encoder–decoder architectures, group attention for multivariate and covariate-informed forecasting, pretraining corpora and synthetic augmentation, zero-shot and in-context inference, and contamination-aware evaluation.</p>
+    </div>
+
+    <div class="module">
+      <p class="time">40 – 70</p>
+      <h3>Tabular foundation models</h3>
+      <p class="muted">Prediction on a table reframed as in-context learning. Synthetic priors and TabPFN, scaling in-context learning with TabICL and TabDPT, mixed priors in Mitra, ensembling alongside tree-based and neural baselines, and the pitfalls of tabular evaluation — contamination from web-scraped corpora, inconsistent preprocessing, unfair baselines.</p>
+    </div>
+
+    <div class="module">
+      <p class="time">70 – 85</p>
+      <h3>Data management and systems implications</h3>
+      <p class="muted">Case studies from the AWS forecasting stack: long-horizon capacity planning in DynamoDB, warm-pool sizing for Athena, and cache-pool provisioning in Redshift under intermittent demand. Then the forward-looking argument — expressing predictive workloads as context construction plus model invocation inside analytical query plans, and the cost modeling, plan optimization and result caching that would require.</p>
+    </div>
+
+    <div class="module">
+      <p class="time">85 – 90</p>
+      <h3>Demos, open problems, and discussion</h3>
+      <p class="muted">Short live demonstrations of zero-shot forecasting and in-context tabular prediction, then failure modes and open problems: multi-modal structured-data models, continual pretraining, active data acquisition, privacy-preserving pretraining, and tighter database integration. The floor is open.</p>
+    </div>
+  </section>
+
+  <hr class="hr">
+
+  <section id="presenters" style="padding: 70px 0 84px">
+    <span class="kicker">Presenters</span>
+    <div class="presenters">
+
+      <div class="presenter">
+        <figure class="grayscale">
+          <!-- Swap for: <img src="assets/xiyuan-zhang.jpg" alt="Xiyuan Zhang" width="168" height="210"> -->
+          <div class="photo-slot"><b>XZ</b><span>Photo</span></div>
+        </figure>
+        <div>
+          <h3>Xiyuan Zhang</h3>
+          <p class="affil">Amazon Web Services</p>
+          <p class="bio muted">Applied Scientist at AWS, working on structured-data foundation models with an emphasis on pretraining and multimodal analysis. Lead author of Mitra and co-author of Chronos and Chronos-2. She earned her PhD in Computer Science from UC San Diego, and has co-organized the Foundation Models for Structured Data workshops at ICML 2025 and ICML 2026 and Time Series in the Age of Large Models at ICLR 2026.</p>
+        </div>
+      </div>
+
+      <div class="presenter">
+        <figure class="grayscale">
+          <!-- Swap for: <img src="assets/bernie-wang.jpg" alt="Yuyang (Bernie) Wang" width="168" height="210"> -->
+          <div class="photo-slot"><b>YW</b><span>Photo</span></div>
+        </figure>
+        <div>
+          <h3>Yuyang (Bernie) Wang</h3>
+          <p class="affil">NTT DATA AIVista</p>
+          <p class="bio muted">Member of Technical Staff at NTT DATA AIVista. Previously a Principal Scientist at Amazon, where he led research in automated machine learning, time series forecasting, and foundation models. He helped build AutoGluon, GluonTS and Chronos, contributed to Amazon Forecast and SageMaker, and has delivered more than six tutorials on time series forecasting at VLDB, SIGMOD and KDD.</p>
+        </div>
+      </div>
+
+    </div>
+    <p class="coauthors muted">The tutorial is co-authored with <strong>Abdul Fatir Ansari</strong> (Amazon Web Services), <strong>Christos Faloutsos</strong> (Carnegie Mellon University and Amazon), and <strong>George Karypis</strong> (University of Minnesota and NTT DATA AIVista).</p>
+  </section>
+
+  <hr class="hr">
+
+  <section id="reading" style="padding: 70px 0 84px">
+    <span class="kicker">Reading list</span>
+
+    <a class="paper-card" href="https://doi.org/10.14778/3827998.3828154" target="_blank" rel="noopener noreferrer">
+      <div>
+        <span class="tag tag-accent">Tutorial paper</span>
+        <h3>From Big Time Series Forecasting to Foundation Models for Structured Data</h3>
+        <p class="cite muted">Faloutsos, Ansari, Zhang, Karypis, Wang · PVLDB 19(12): 4939–4943, 2026 · doi:10.14778/3827998.3828154</p>
+      </div>
+      <span class="go">Read →</span>
+    </a>
+
+    <div class="refs">
+      <div>
+        <h3>Foundations</h3>
+        <p>Salinas, Flunkert, Gasthaus, Januschowski. <em>DeepAR: Probabilistic forecasting with autoregressive recurrent networks.</em> IJF 36(3), 2020.</p>
+        <p>Alexandrov et&nbsp;al. <em>GluonTS: Probabilistic and neural time series modeling in Python.</em> JMLR 21(116), 2020.</p>
+        <p>Oreshkin, Carpov, Chapados, Bengio. <em>N-BEATS: Neural basis expansion analysis.</em> arXiv:1905.10437, 2019.</p>
+        <p>Lim, Arık, Loeff, Pfister. <em>Temporal fusion transformers.</em> IJF 37(4), 2021.</p>
+        <p>Faloutsos, Gasthaus, Januschowski, Wang. <em>Forecasting Big Time Series: Old and New.</em> PVLDB 11(12), 2018.</p>
+      </div>
+      <div>
+        <h3>Time-series foundation models</h3>
+        <p>Ansari et&nbsp;al. <em>Chronos: Learning the language of time series.</em> arXiv:2403.07815, 2024.</p>
+        <p>Ansari et&nbsp;al. <em>Chronos-2: From univariate to universal forecasting.</em> arXiv:2510.15821, 2025.</p>
+        <p>Das, Kong, Sen, Zhou. <em>A decoder-only foundation model for time-series forecasting.</em> arXiv:2310.10688, 2023.</p>
+        <p>Woo et&nbsp;al. <em>Unified training of universal time series forecasting transformers.</em> ICML, 2024.</p>
+        <p>Cohen et&nbsp;al. <em>Toto: Time series optimized transformer for observability.</em> arXiv:2407.07874, 2024.</p>
+      </div>
+      <div>
+        <h3>Tabular foundation models</h3>
+        <p>Hollmann et&nbsp;al. <em>Accurate predictions on small data with a tabular foundation model.</em> Nature 637(8045), 2025.</p>
+        <p>Qu, Holzmüller, Varoquaux, Le&nbsp;Morvan. <em>TabICL: A tabular foundation model for in-context learning on large data.</em> arXiv:2502.05564, 2025.</p>
+        <p>Ma et&nbsp;al. <em>TabDPT: Scaling tabular foundation models on real data.</em> arXiv:2410.18164, 2024.</p>
+        <p>Zhang et&nbsp;al. <em>Mitra: Mixed synthetic priors for enhancing tabular foundation models.</em> arXiv:2510.21204, 2025.</p>
+        <p>Erickson et&nbsp;al. <em>AutoGluon-Tabular.</em> arXiv:2003.06505, 2020.</p>
+      </div>
+      <div>
+        <h3>Evaluation &amp; systems</h3>
+        <p>Aksu et&nbsp;al. <em>GIFT-Eval: A benchmark for general time series forecasting model evaluation.</em> arXiv:2410.10393, 2024.</p>
+        <p>Shchur et&nbsp;al. <em>fev-bench: A realistic benchmark for time series forecasting.</em> arXiv:2509.26468, 2025.</p>
+        <p>Erickson et&nbsp;al. <em>TabArena: A living benchmark for machine learning on tabular data.</em> arXiv:2506.16791, 2025.</p>
+        <p>Salinas, Erickson. <em>TabRepo: A large scale repository of tabular model evaluations.</em> arXiv:2311.02971, 2023.</p>
+        <p>Januschowski et&nbsp;al. <em>A flexible forecasting stack.</em> 2024.</p>
+      </div>
+    </div>
+  </section>
+
+  <hr class="hr">
+
+  <section id="materials" style="padding: 70px 0 84px">
+    <span class="kicker">Slides &amp; materials</span>
+
+    <!-- Materials go live after the session. To publish one, replace its
+         <span class="btn btn-secondary pending"> with:
+         <a class="btn btn-primary" href="…">Download</a> -->
+
+    <div class="material">
+      <h3>Slide deck (PDF)</h3>
+      <p class="muted">The full 90-minute deck, with the figures and the reference list.</p>
+      <span class="btn btn-secondary pending" aria-disabled="true">After the session</span>
+    </div>
+
+    <div class="material">
+      <h3>Demo notebooks</h3>
+      <p class="muted">Runnable examples for the zero-shot forecasting and in-context tabular demonstrations in modules 2, 3 and 5.</p>
+      <span class="btn btn-secondary pending" aria-disabled="true">After the session</span>
+    </div>
+
+    <div class="material">
+      <h3>Reading list (BibTeX)</h3>
+      <p class="muted">Every reference above, in one file.</p>
+      <span class="btn btn-secondary pending" aria-disabled="true">After the session</span>
+    </div>
+  </section>
+
+</main>
+
+<section class="poster">
+  <div class="wrap">
+    <h2>See you in Boston.</h2>
+    <p>VLDB 2026 · 31 August – 4 September · The Westin Boston Seaport District. The tutorial slot is announced with the full program.</p>
+    <div class="actions">
+      <a class="btn btn-ghost" href="https://vldb.org/2026/" target="_blank" rel="noopener noreferrer">VLDB 2026 program</a>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+  <footer class="site-foot">
+    <p>From Big Time Series Forecasting to Foundation Models for Structured Data — a tutorial at the 52nd International Conference on Very Large Data Bases.</p>
+    <p>Christos Faloutsos, Abdul Fatir Ansari, Xiyuan Zhang, George Karypis, and Yuyang Wang. PVLDB 19(12): 4939–4943, 2026. <a href="https://doi.org/10.14778/3827998.3828154">doi:10.14778/3827998.3828154</a></p>
+  </footer>
+</div>
+
+</body>
+</html>
