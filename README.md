@@ -7,8 +7,8 @@ Co-authored with Abdul Fatir Ansari, Christos Faloutsos and George Karypis.
 
 Tutorial paper: PVLDB 19(12): 4939–4943, 2026 · [doi:10.14778/3827998.3828154](https://doi.org/10.14778/3827998.3828154)
 
-VLDB 2026 · 31 August – 4 September · The Westin Boston Seaport District. The session slot is
-announced with the full program.
+**Tutorial 16 · Thursday 3 September 2026, 13:45 – 15:15 · Webster**, at The Westin Boston
+Seaport District. VLDB 2026 runs 31 August – 4 September.
 
 ## Repository layout
 
