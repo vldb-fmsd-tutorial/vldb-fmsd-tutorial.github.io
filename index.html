@@ -137,21 +137,9 @@
     color: var(--color-accent-700); margin: 8px 0 0;
   }
   .presenter .bio { font-size: 15.5px; line-height: 28px; margin: 16px 0 0; }
+  /* Headshots are shipped at 2x (336x420) and displayed at 168x210.
+     The .grayscale wrapper prints them black and white. */
   .presenter img { width: 168px; height: 210px; object-fit: cover; }
-  /* Placeholder frame, shown until a real headshot is dropped in. */
-  .photo-slot {
-    width: 168px; height: 210px; display: grid; place-content: center; gap: 6px;
-    background: var(--color-surface); border: 2px solid var(--color-divider);
-    text-align: center;
-  }
-  .photo-slot b {
-    font-family: var(--font-heading); font-weight: var(--font-heading-weight);
-    font-size: 32px; line-height: 1; color: var(--color-accent);
-  }
-  .photo-slot span {
-    font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
-    color: color-mix(in srgb, var(--color-text) 55%, transparent);
-  }
   .coauthors { font-size: 15px; line-height: 28px; margin: 56px 0 0; padding-top: 28px; border-top: 2px solid var(--color-divider); max-width: 78ch; }
 
   /* — reading list — */
@@ -351,8 +339,7 @@
 
       <div class="presenter">
         <figure class="grayscale">
-          <!-- Swap for: <img src="assets/xiyuan-zhang.jpg" alt="Xiyuan Zhang" width="168" height="210"> -->
-          <div class="photo-slot"><b>XZ</b><span>Photo</span></div>
+          <img src="assets/xiyuan-zhang.jpg" alt="Xiyuan Zhang" width="168" height="210" loading="lazy" decoding="async">
         </figure>
         <div>
           <h3>Xiyuan Zhang</h3>
@@ -363,8 +350,7 @@
 
       <div class="presenter">
         <figure class="grayscale">
-          <!-- Swap for: <img src="assets/bernie-wang.jpg" alt="Yuyang (Bernie) Wang" width="168" height="210"> -->
-          <div class="photo-slot"><b>YW</b><span>Photo</span></div>
+          <img src="assets/bernie-wang.jpg" alt="Yuyang (Bernie) Wang" width="168" height="210" loading="lazy" decoding="async">
         </figure>
         <div>
           <h3>Yuyang (Bernie) Wang</h3>
