@@ -138,7 +138,8 @@
   }
   .presenter .bio { font-size: 15.5px; line-height: 28px; margin: 16px 0 0; }
   /* Headshots are shipped at 2x (336x420) and displayed at 168x210.
-     The .grayscale wrapper prints them black and white. */
+     These deliberately do NOT use the design system's .grayscale wrapper:
+     the presenter photographs stay in full color by request. */
   .presenter img { width: 168px; height: 210px; object-fit: cover; }
   .coauthors { font-size: 15px; line-height: 28px; margin: 56px 0 0; padding-top: 28px; border-top: 2px solid var(--color-divider); max-width: 78ch; }
 
@@ -338,7 +339,7 @@
     <div class="presenters">
 
       <div class="presenter">
-        <figure class="grayscale">
+        <figure>
           <img src="assets/xiyuan-zhang.jpg" alt="Xiyuan Zhang" width="168" height="210" loading="lazy" decoding="async">
         </figure>
         <div>
@@ -349,7 +350,7 @@
       </div>
 
       <div class="presenter">
-        <figure class="grayscale">
+        <figure>
           <img src="assets/bernie-wang.jpg" alt="Yuyang (Bernie) Wang" width="168" height="210" loading="lazy" decoding="async">
         </figure>
         <div>
