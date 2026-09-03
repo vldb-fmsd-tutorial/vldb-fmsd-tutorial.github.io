@@ -127,7 +127,9 @@
 
   /* — presenters — */
   .presenters {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    /* The 400px floor caps the grid at two columns, so five presenters never pack
+       into a narrow third; min() keeps the track inside a small viewport. */
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 400px), 1fr));
     gap: 56px clamp(32px, 6vw, 96px);
   }
   .presenter { display: grid; grid-template-columns: 168px minmax(0, 1fr); gap: 28px; align-items: start; }
@@ -136,7 +138,7 @@
     font-size: 13px; line-height: 20px; letter-spacing: 0.06em; text-transform: uppercase;
     color: var(--color-accent-700); margin: 8px 0 0;
   }
-  .presenter .bio { font-size: 15.5px; line-height: 28px; margin: 16px 0 0; }
+  .presenter .bio { font-size: 15.5px; line-height: 28px; margin: 16px 0 0; max-width: 60ch; }
   /* Headshots are shipped at 2x (336x420) and displayed at 168x210.
      These deliberately do NOT use the design system's .grayscale wrapper:
      the presenter photographs stay in full color by request. */
@@ -360,8 +362,41 @@
         </div>
       </div>
 
+      <div class="presenter">
+        <figure>
+          <img src="assets/abdul-fatir-ansari.jpg" alt="Abdul Fatir Ansari" width="168" height="210" loading="lazy" decoding="async">
+        </figure>
+        <div>
+          <h3>Abdul Fatir Ansari</h3>
+          <p class="affil">Amazon Web Services</p>
+          <p class="bio muted">Senior Applied Scientist at AWS, focusing on time series forecasting. Lead developer of the Chronos family of time series foundation models, which ranked among the most downloaded models on Hugging Face in 2024. He received his PhD from the National University of Singapore in 2022, where he worked on deep generative models for images and time series and received the Dean’s Award for his research.</p>
+        </div>
+      </div>
+
+      <div class="presenter">
+        <figure>
+          <img src="assets/christos-faloutsos.jpg" alt="Christos Faloutsos" width="168" height="210" loading="lazy" decoding="async">
+        </figure>
+        <div>
+          <h3>Christos Faloutsos</h3>
+          <p class="affil">Carnegie Mellon University and Amazon</p>
+          <p class="bio muted">Professor at Carnegie Mellon University and an Amazon Scholar, holder of the Fredkin Professorship in Artificial Intelligence. An ACM Fellow, he has received the SIGKDD Innovations Award, the PAKDD Distinguished Contributions Award and 32 best-paper awards, and has published more than 500 refereed articles. His research covers large-scale data mining on graphs and time sequences, anomaly detection, tensors and fractals.</p>
+        </div>
+      </div>
+
+      <div class="presenter">
+        <figure>
+          <img src="assets/george-karypis.jpg" alt="George Karypis" width="168" height="210" loading="lazy" decoding="async">
+        </figure>
+        <div>
+          <h3>George Karypis</h3>
+          <p class="affil">University of Minnesota and NTT DATA AIVista</p>
+          <p class="bio muted">Distinguished McKnight University Professor and William Norris Chair in Large Scale Computing at the University of Minnesota, and Chief Scientist at NTT DATA AIVista. His research spans machine learning, data mining, high-performance computing and recommender systems. He received the 2025 ACM SIGKDD Innovation Award for pioneering work in graph partitioning, recommendation systems and scalable algorithms, and is an IEEE Fellow.</p>
+        </div>
+      </div>
+
     </div>
-    <p class="coauthors muted">The tutorial is co-authored with <strong>Abdul Fatir Ansari</strong> (Amazon Web Services), <strong>Christos Faloutsos</strong> (Carnegie Mellon University and Amazon), and <strong>George Karypis</strong> (University of Minnesota and NTT DATA AIVista).</p>
+    <p class="coauthors muted"><strong>Xiyuan Zhang</strong> and <strong>Yuyang (Bernie) Wang</strong> deliver the session in Boston; all five authors contributed to the tutorial.</p>
   </section>
 
   <hr class="hr">
