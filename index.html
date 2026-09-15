@@ -183,7 +183,6 @@
   .material:last-of-type { padding-bottom: 0; }
   .material h3 { font-size: 20px; line-height: 28px; margin: 0; }
   .material p { font-size: 15px; line-height: 24px; margin: 0; }
-  .pending { opacity: 0.45; pointer-events: none; white-space: nowrap; }
 
   /* — closing poster — */
   .poster { background: var(--color-accent); color: var(--color-bg); }
@@ -454,26 +453,10 @@
   <section id="materials" style="padding: 70px 0 84px">
     <span class="kicker">Slides &amp; materials</span>
 
-    <!-- Materials go live after the session. To publish one, replace its
-         <span class="btn btn-secondary pending"> with:
-         <a class="btn btn-primary" href="…">Download</a> -->
-
     <div class="material">
       <h3>Slide deck (PDF)</h3>
       <p class="muted">The full 90-minute deck, with the figures and the reference list.</p>
-      <span class="btn btn-secondary pending" aria-disabled="true">After the session</span>
-    </div>
-
-    <div class="material">
-      <h3>Demo notebooks</h3>
-      <p class="muted">Runnable examples for the zero-shot forecasting and in-context tabular demonstrations in modules 2, 3 and 5.</p>
-      <span class="btn btn-secondary pending" aria-disabled="true">After the session</span>
-    </div>
-
-    <div class="material">
-      <h3>Reading list (BibTeX)</h3>
-      <p class="muted">Every reference above, in one file.</p>
-      <span class="btn btn-secondary pending" aria-disabled="true">After the session</span>
+      <a class="btn btn-primary" href="assets/vldb_fmsd_slides.pdf" download>Download</a>
     </div>
   </section>
 
